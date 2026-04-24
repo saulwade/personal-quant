@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     timezone: str = "America/Monterrey"
     report_output_dir: Path = Path("reports")
     market_output_dir: Path = Path("data/market")
+    portfolio_path: Path = Path("data/portfolio/positions.json")
     require_live_secrets: bool = False
 
     model_config = SettingsConfigDict(

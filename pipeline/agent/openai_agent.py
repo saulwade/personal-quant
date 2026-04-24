@@ -14,15 +14,11 @@ class ResponsesClient(Protocol):
     def parse(self, **kwargs): ...
 
 
-def _build_user_input(snapshot: MarketUniverseSnapshot) -> str:
-    context = build_openai_market_context(snapshot)
-    return json.dumps(context, ensure_ascii=False, separators=(",", ":"))
-
-
 def analyze_market_snapshot_with_openai(
     snapshot: MarketUniverseSnapshot,
     settings: Settings,
     *,
+    portfolio: dict[str, object] | None = None,
     responses_client: ResponsesClient | None = None,
 ) -> InvestmentAnalysis:
     if not settings.openai_api_key and responses_client is None:
@@ -32,7 +28,11 @@ def analyze_market_snapshot_with_openai(
     response = client.parse(
         model=settings.openai_model,
         instructions=QUANT_SYSTEM_PROMPT,
-        input=_build_user_input(snapshot),
+        input=json.dumps(
+            build_openai_market_context(snapshot, portfolio=portfolio),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
         text_format=InvestmentAnalysis,
         max_output_tokens=settings.openai_max_output_tokens,
         store=False,

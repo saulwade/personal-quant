@@ -1,5 +1,6 @@
 import argparse
 from collections.abc import Sequence
+from decimal import Decimal
 from pathlib import Path
 
 from loguru import logger
@@ -7,6 +8,15 @@ from loguru import logger
 from pipeline.config import Settings
 from pipeline.data.market import build_market_snapshot, write_market_snapshot
 from pipeline.dry_run import run_dry_run
+from pipeline.portfolio import (
+    Position,
+    init_portfolio,
+    load_portfolio,
+    portfolio_context,
+    remove_position,
+    save_portfolio,
+    upsert_position,
+)
 from pipeline.universe import UNIVERSES, get_universe, universe_by_ticker
 
 
@@ -54,6 +64,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output JSON path. Defaults to data/market/<universe>-snapshot.json.",
     )
 
+    portfolio = subparsers.add_parser("portfolio", help="Manage local portfolio positions")
+    portfolio_subparsers = portfolio.add_subparsers(dest="portfolio_command", required=True)
+
+    portfolio_init = portfolio_subparsers.add_parser("init", help="Create local portfolio file")
+    portfolio_init.add_argument("--force", action="store_true", help="Overwrite existing file.")
+
+    portfolio_subparsers.add_parser("show", help="Show local portfolio summary")
+
+    portfolio_add = portfolio_subparsers.add_parser("add", help="Add or update a position")
+    portfolio_add.add_argument("--ticker", required=True)
+    portfolio_add.add_argument("--shares", required=True, type=Decimal)
+    portfolio_add.add_argument("--avg-buy-price", required=True, type=Decimal)
+    portfolio_add.add_argument("--currency", default="USD")
+    portfolio_add.add_argument("--asset-type", default="equity")
+    portfolio_add.add_argument("--notes")
+
+    portfolio_remove = portfolio_subparsers.add_parser("remove", help="Remove a position")
+    portfolio_remove.add_argument("--ticker", required=True)
+
     return parser
 
 
@@ -95,6 +124,66 @@ def main(argv: Sequence[str] | None = None) -> int:
         if snapshot.warnings:
             logger.warning("Snapshot completed with {} warnings", len(snapshot.warnings))
         return 0
+
+    if args.command == "portfolio":
+        settings = Settings()
+        path = settings.portfolio_path
+
+        if args.portfolio_command == "init":
+            portfolio = init_portfolio(
+                path,
+                base_currency=settings.portfolio_currency,
+                force=args.force,
+            )
+            logger.info(
+                "Portfolio initialized at {} with {} positions",
+                path,
+                len(portfolio.positions),
+            )
+            return 0
+
+        portfolio = load_portfolio(path, base_currency=settings.portfolio_currency)
+
+        if args.portfolio_command == "show":
+            context = portfolio_context(portfolio)
+            logger.info("Portfolio path: {}", path)
+            logger.info("Base currency: {}", context["base_currency"])
+            logger.info("Positions: {}", context["position_count"])
+            if portfolio.is_empty:
+                logger.info("Portfolio is empty. Add positions after your first GBM purchase.")
+            for position in portfolio.positions:
+                logger.info(
+                    "{} | shares={} | avg_buy_price={} {} | asset_type={}",
+                    position.ticker,
+                    position.shares,
+                    position.avg_buy_price,
+                    position.currency,
+                    position.asset_type,
+                )
+            return 0
+
+        if args.portfolio_command == "add":
+            position = Position(
+                ticker=args.ticker,
+                shares=args.shares,
+                avg_buy_price=args.avg_buy_price,
+                currency=args.currency.upper(),
+                asset_type=args.asset_type,
+                notes=args.notes,
+            )
+            upsert_position(portfolio, position)
+            save_portfolio(portfolio, path)
+            logger.info("Saved position {} to {}", position.ticker, path)
+            return 0
+
+        if args.portfolio_command == "remove":
+            removed = remove_position(portfolio, args.ticker)
+            save_portfolio(portfolio, path)
+            if removed:
+                logger.info("Removed position {}", args.ticker.upper())
+            else:
+                logger.warning("Position {} was not present", args.ticker.upper())
+            return 0
 
     parser.error("Unsupported command.")
     return 2

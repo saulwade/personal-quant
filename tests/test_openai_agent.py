@@ -25,6 +25,7 @@ def test_openai_agent_uses_structured_outputs_schema() -> None:
     analysis = analyze_market_snapshot_with_openai(
         make_market_snapshot(),
         settings,
+        portfolio={"is_empty": True, "position_count": 0},
         responses_client=client,
     )
 
@@ -32,3 +33,4 @@ def test_openai_agent_uses_structured_outputs_schema() -> None:
     assert client.kwargs["model"] == "gpt-5.4"
     assert client.kwargs["text_format"].__name__ == "InvestmentAnalysis"
     assert client.kwargs["store"] is False
+    assert '"portfolio"' in client.kwargs["input"]

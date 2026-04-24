@@ -138,6 +138,35 @@ reports/dry-run-report.html
 Use this only after reviewing the market snapshot. The output is research support
 for a long-term GBM-oriented portfolio, not an automatic trading instruction.
 
+## Local Portfolio
+
+If you have not bought anything in GBM yet, initialize an empty local portfolio:
+
+```bash
+quant portfolio init
+quant portfolio show
+```
+
+It writes:
+
+```text
+data/portfolio/positions.json
+```
+
+After your first GBM purchase, add it locally:
+
+```bash
+quant portfolio add \
+  --ticker VOO \
+  --shares 1 \
+  --avg-buy-price 500 \
+  --currency USD \
+  --asset-type etf
+```
+
+The OpenAI dry-run includes this portfolio context. If the portfolio is empty,
+the agent treats the report as initial portfolio construction research.
+
 ## Verification
 
 ```bash

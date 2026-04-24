@@ -14,6 +14,7 @@ from pipeline.agent.schemas import (
 from pipeline.analysis.market_report import build_mechanical_analysis
 from pipeline.config import Settings
 from pipeline.data.market import load_market_snapshot
+from pipeline.portfolio import load_portfolio, portfolio_context
 from pipeline.reporting.email_builder import build_daily_report_html
 
 
@@ -117,8 +118,16 @@ def run_dry_run(
 
     if market_snapshot_path:
         market_snapshot = load_market_snapshot(market_snapshot_path)
+        portfolio = load_portfolio(
+            settings.portfolio_path,
+            base_currency=settings.portfolio_currency,
+        )
         analysis = (
-            analyze_market_snapshot_with_openai(market_snapshot, settings)
+            analyze_market_snapshot_with_openai(
+                market_snapshot,
+                settings,
+                portfolio=portfolio_context(portfolio),
+            )
             if use_openai
             else build_mechanical_analysis(market_snapshot)
         )

@@ -11,6 +11,7 @@ def test_settings_defaults_for_local_dry_run() -> None:
     assert settings.openai_fallback_model == "gpt-5.4-mini"
     assert settings.timezone == "America/Monterrey"
     assert settings.portfolio_currency == "MXN"
+    assert str(settings.portfolio_path) == "data/portfolio/positions.json"
 
 
 def test_live_settings_validation_lists_missing_required_values() -> None:

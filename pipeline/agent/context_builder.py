@@ -22,7 +22,11 @@ def _asset_context(asset: MarketAssetSnapshot) -> dict[str, Any]:
     }
 
 
-def build_openai_market_context(snapshot: MarketUniverseSnapshot) -> dict[str, Any]:
+def build_openai_market_context(
+    snapshot: MarketUniverseSnapshot,
+    *,
+    portfolio: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     valid_assets = [asset for asset in snapshot.assets if asset.observations > 0]
     sorted_by_opportunity = sorted(
         valid_assets,
@@ -56,6 +60,12 @@ def build_openai_market_context(snapshot: MarketUniverseSnapshot) -> dict[str, A
                 "macro indicators",
                 "tax constraints",
             ],
+        },
+        "portfolio": portfolio
+        or {
+            "is_empty": True,
+            "position_count": 0,
+            "note": "No real GBM positions have been added yet.",
         },
         "top_opportunity_screen": [_asset_context(asset) for asset in sorted_by_opportunity[:8]],
         "highest_risk_screen": [_asset_context(asset) for asset in sorted_by_risk[:5]],
