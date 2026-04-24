@@ -1,0 +1,72 @@
+[project]
+name = "personal-quant"
+version = "0.1.0"
+description = "Private daily quant-investment analysis pipeline."
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+dependencies = [
+  "loguru>=0.7.3",
+  "openai>=2.7.0",
+  "pydantic>=2.12.0",
+  "pydantic-settings>=2.11.0",
+  "python-dotenv>=1.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=80.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+data = [
+  "beautifulsoup4>=4.13.0",
+  "feedparser>=6.0.11",
+  "fredapi>=0.5.2",
+  "numpy>=2.0.0",
+  "pandas>=2.2.0",
+  "praw>=7.8.0",
+  "pycoingecko>=3.2.0",
+  "pytrends>=4.9.2",
+  "requests>=2.32.0",
+  "scikit-learn>=1.5.0",
+  "scipy>=1.14.0",
+  "statsmodels>=0.14.0",
+  "yfinance>=0.2.60",
+]
+heavy = [
+  "prophet>=1.1.6",
+  "torch>=2.5.0",
+  "transformers>=4.46.0",
+]
+db = [
+  "psycopg2-binary>=2.9.10",
+  "sqlalchemy>=2.0.40",
+]
+reporting = [
+  "resend>=2.7.0",
+]
+scheduler = [
+  "apscheduler>=3.11.0",
+]
+dev = [
+  "black>=25.0.0",
+  "pytest>=8.3.0",
+  "ruff>=0.14.0",
+]
+
+[project.scripts]
+quant = "pipeline.cli:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

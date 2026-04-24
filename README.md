@@ -43,9 +43,41 @@ gpt-5.4-mini
 
 ## Status
 
-Initial planning and project context are in place. Implementation tasks live in:
+Initial planning and the first local dry-run scaffold are in place. Implementation tasks live in:
 
 ```text
 docs/superpowers/plans/2026-04-24-initial-build-openai.md
 ```
 
+## Local Setup
+
+Preferred setup once `uv` is installed:
+
+```bash
+uv sync --extra dev
+uv run quant daily --dry-run
+```
+
+Temporary fallback using the local virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+quant daily --dry-run
+```
+
+The dry-run does not call OpenAI, Neon, yfinance, Resend, FRED, or any other external service. It writes local artifacts to:
+
+```text
+reports/dry-run-analysis.json
+reports/dry-run-report.html
+```
+
+## Verification
+
+```bash
+pytest -v
+ruff check .
+black --check .
+```
