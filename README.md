@@ -117,6 +117,27 @@ This still does not call OpenAI, Neon, or Resend. It converts the market snapsho
 into a mechanical analysis report with opportunity candidates, risk alerts,
 trend/momentum notes, and preliminary watchlist entries.
 
+## Daily Dry-Run With OpenAI
+
+To let OpenAI synthesize the market snapshot into the structured daily report,
+set `OPENAI_API_KEY` in `.env`, then run:
+
+```bash
+quant daily --dry-run \
+  --market-snapshot data/market/gbm-growth-snapshot.json \
+  --use-openai
+```
+
+This makes one OpenAI Responses API call and writes the same local artifacts:
+
+```text
+reports/dry-run-analysis.json
+reports/dry-run-report.html
+```
+
+Use this only after reviewing the market snapshot. The output is research support
+for a long-term GBM-oriented portfolio, not an automatic trading instruction.
+
 ## Verification
 
 ```bash

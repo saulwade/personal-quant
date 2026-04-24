@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.4"
     openai_fallback_model: str = "gpt-5.4-mini"
+    openai_max_output_tokens: int = 6000
     resend_api_key: str | None = None
     report_email_to: str | None = None
     report_email_from: str | None = None

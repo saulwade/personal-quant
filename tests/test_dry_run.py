@@ -2,8 +2,9 @@ import json
 from pathlib import Path
 
 from pipeline.config import Settings
-from pipeline.data.market import MarketAssetSnapshot, MarketUniverseSnapshot, write_market_snapshot
+from pipeline.data.market import write_market_snapshot
 from pipeline.dry_run import run_dry_run
+from tests.helpers import make_market_snapshot
 
 
 def test_dry_run_writes_json_and_html(tmp_path: Path) -> None:
@@ -22,38 +23,7 @@ def test_dry_run_writes_json_and_html(tmp_path: Path) -> None:
 
 def test_dry_run_can_use_market_snapshot(tmp_path: Path) -> None:
     snapshot_path = tmp_path / "snapshot.json"
-    snapshot = MarketUniverseSnapshot(
-        generated_at="2026-04-24T12:00:00+00:00",
-        years_requested=5,
-        assets=[
-            MarketAssetSnapshot(
-                ticker="VOO",
-                name="VOO",
-                asset_class="etf",
-                market="us",
-                risk_bucket="core",
-                role="Broad US equity exposure",
-                years_requested=5,
-                start_date="2021-01-01",
-                end_date="2026-01-01",
-                observations=1260,
-                metrics={
-                    "observations": 1260,
-                    "latest_close": 100.0,
-                    "return_1m_pct": 2.0,
-                    "return_3m_pct": 8.0,
-                    "return_12m_pct": 21.0,
-                    "momentum_12_1_pct": 18.0,
-                    "volatility_12m_pct": 19.0,
-                    "max_drawdown_pct": -12.0,
-                    "rsi_14": 58.0,
-                    "trend": "uptrend",
-                },
-                opportunity_score=78,
-                risk_score=38,
-            )
-        ],
-    )
+    snapshot = make_market_snapshot()
     write_market_snapshot(snapshot, snapshot_path)
     settings = Settings(_env_file=None, report_output_dir=tmp_path / "reports")
 
@@ -63,3 +33,14 @@ def test_dry_run_can_use_market_snapshot(tmp_path: Path) -> None:
     report = report_path.read_text(encoding="utf-8")
     assert analysis["ticker_analyses"][0]["ticker"] == "VOO"
     assert "VOO" in report
+
+
+def test_openai_dry_run_requires_market_snapshot(tmp_path: Path) -> None:
+    settings = Settings(_env_file=None, report_output_dir=tmp_path)
+
+    try:
+        run_dry_run(settings, use_openai=True)
+    except ValueError as exc:
+        assert "--use-openai requires --market-snapshot" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError")

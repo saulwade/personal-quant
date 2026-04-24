@@ -25,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional market snapshot JSON to power the dry-run report.",
     )
+    daily.add_argument(
+        "--use-openai",
+        action="store_true",
+        help="Use OpenAI to synthesize the dry-run report from --market-snapshot.",
+    )
 
     market = subparsers.add_parser("market", help="Fetch and summarize market data")
     market.add_argument(
@@ -61,6 +66,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         analysis_path, report_path = run_dry_run(
             settings,
             market_snapshot_path=args.market_snapshot,
+            use_openai=args.use_openai,
         )
         logger.info("Dry-run analysis written to {}", analysis_path)
         logger.info("Dry-run report written to {}", report_path)

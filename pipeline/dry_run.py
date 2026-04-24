@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from pipeline.agent.openai_agent import analyze_market_snapshot_with_openai
 from pipeline.agent.schemas import (
     InvestmentAnalysis,
     Opportunity,
@@ -104,15 +105,23 @@ def run_dry_run(
     settings: Settings,
     *,
     market_snapshot_path: Path | None = None,
+    use_openai: bool = False,
 ) -> tuple[Path, Path]:
     """Generate local JSON and HTML artifacts without live external services."""
 
     output_dir = settings.report_output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    if use_openai and not market_snapshot_path:
+        raise ValueError("--use-openai requires --market-snapshot")
+
     if market_snapshot_path:
         market_snapshot = load_market_snapshot(market_snapshot_path)
-        analysis = build_mechanical_analysis(market_snapshot)
+        analysis = (
+            analyze_market_snapshot_with_openai(market_snapshot, settings)
+            if use_openai
+            else build_mechanical_analysis(market_snapshot)
+        )
     else:
         analysis = build_sample_analysis()
 
