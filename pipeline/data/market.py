@@ -156,3 +156,6 @@ def write_market_snapshot(snapshot: MarketUniverseSnapshot, output_path: Path) -
     )
     return output_path
 
+
+def load_market_snapshot(snapshot_path: Path) -> MarketUniverseSnapshot:
+    return MarketUniverseSnapshot.model_validate_json(snapshot_path.read_text(encoding="utf-8"))

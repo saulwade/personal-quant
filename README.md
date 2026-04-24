@@ -104,6 +104,19 @@ The default universe includes broad ETFs, US growth stocks, defensive compounder
 and Mexican tickers available for analysis. These outputs are research signals,
 not automatic buy or sell orders.
 
+## Daily Dry-Run With Market Data
+
+After generating a market snapshot, use it to render the daily report with real
+market-derived signals:
+
+```bash
+quant daily --dry-run --market-snapshot data/market/gbm-growth-snapshot.json
+```
+
+This still does not call OpenAI, Neon, or Resend. It converts the market snapshot
+into a mechanical analysis report with opportunity candidates, risk alerts,
+trend/momentum notes, and preliminary watchlist entries.
+
 ## Verification
 
 ```bash

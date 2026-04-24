@@ -10,7 +10,9 @@ from pipeline.agent.schemas import (
     TickerAnalysis,
     WatchlistUpdate,
 )
+from pipeline.analysis.market_report import build_mechanical_analysis
 from pipeline.config import Settings
+from pipeline.data.market import load_market_snapshot
 from pipeline.reporting.email_builder import build_daily_report_html
 
 
@@ -98,13 +100,22 @@ def build_sample_analysis() -> InvestmentAnalysis:
     )
 
 
-def run_dry_run(settings: Settings) -> tuple[Path, Path]:
+def run_dry_run(
+    settings: Settings,
+    *,
+    market_snapshot_path: Path | None = None,
+) -> tuple[Path, Path]:
     """Generate local JSON and HTML artifacts without live external services."""
 
     output_dir = settings.report_output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    analysis = build_sample_analysis()
+    if market_snapshot_path:
+        market_snapshot = load_market_snapshot(market_snapshot_path)
+        analysis = build_mechanical_analysis(market_snapshot)
+    else:
+        analysis = build_sample_analysis()
+
     portfolio_value = f"100,000 {settings.portfolio_currency}"
     report_html = build_daily_report_html(
         analysis,

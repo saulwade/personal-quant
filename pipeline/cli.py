@@ -20,6 +20,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Generate local sample artifacts without live APIs, database, or email.",
     )
+    daily.add_argument(
+        "--market-snapshot",
+        type=Path,
+        help="Optional market snapshot JSON to power the dry-run report.",
+    )
 
     market = subparsers.add_parser("market", help="Fetch and summarize market data")
     market.add_argument(
@@ -53,7 +58,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "daily" and args.dry_run:
         settings = Settings()
-        analysis_path, report_path = run_dry_run(settings)
+        analysis_path, report_path = run_dry_run(
+            settings,
+            market_snapshot_path=args.market_snapshot,
+        )
         logger.info("Dry-run analysis written to {}", analysis_path)
         logger.info("Dry-run report written to {}", report_path)
         return 0
