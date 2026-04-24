@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     portfolio_currency: str = "MXN"
     timezone: str = "America/Monterrey"
     report_output_dir: Path = Path("reports")
+    market_output_dir: Path = Path("data/market")
     require_live_secrets: bool = False
 
     model_config = SettingsConfigDict(

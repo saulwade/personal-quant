@@ -21,9 +21,9 @@ env/
 !.env.example
 
 # Local data and generated reports
-data/
-reports/
-logs/
+/data/
+/reports/
+/logs/
 *.sqlite
 *.db
 
@@ -36,4 +36,3 @@ logs/
 dist/
 build/
 *.egg-info/
-
