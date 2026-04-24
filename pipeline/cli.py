@@ -17,6 +17,7 @@ from pipeline.portfolio import (
     save_portfolio,
     upsert_position,
 )
+from pipeline.reporting.sender import send_report_file
 from pipeline.universe import UNIVERSES, get_universe, universe_by_ticker
 
 
@@ -39,6 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-openai",
         action="store_true",
         help="Use OpenAI to synthesize the dry-run report from --market-snapshot.",
+    )
+    daily.add_argument(
+        "--send-email",
+        action="store_true",
+        help="Send the generated report through Resend.",
     )
 
     market = subparsers.add_parser("market", help="Fetch and summarize market data")
@@ -99,6 +105,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         logger.info("Dry-run analysis written to {}", analysis_path)
         logger.info("Dry-run report written to {}", report_path)
+        if args.send_email:
+            result = send_report_file(
+                settings=settings,
+                report_path=report_path,
+            )
+            logger.info("Email sent via Resend with id {}", result.id)
         return 0
 
     if args.command == "market":

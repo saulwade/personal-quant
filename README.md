@@ -138,6 +138,27 @@ reports/dry-run-report.html
 Use this only after reviewing the market snapshot. The output is research support
 for a long-term GBM-oriented portfolio, not an automatic trading instruction.
 
+## Send The Email Report
+
+Set these variables in `.env`:
+
+```env
+RESEND_API_KEY=...
+REPORT_EMAIL_TO=saulwade29@gmail.com
+REPORT_EMAIL_FROM=onboarding@resend.dev
+```
+
+Then send the generated report through Resend:
+
+```bash
+quant daily --dry-run \
+  --market-snapshot data/market/gbm-growth-snapshot.json \
+  --use-openai \
+  --send-email
+```
+
+This performs one OpenAI call and one Resend email send.
+
 ## Local Portfolio
 
 If you have not bought anything in GBM yet, initialize an empty local portfolio:
